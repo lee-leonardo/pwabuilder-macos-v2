@@ -1,5 +1,8 @@
+import dotenv from "dotenv";
 import fastify from "fastify";
 import macos from "./macos";
+
+dotenv.config();
 
 const server = fastify({
   logger: true,
