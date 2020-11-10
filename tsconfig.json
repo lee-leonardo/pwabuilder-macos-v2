@@ -16,7 +16,7 @@
   },
   "lib": ["es2018"],
   "include": [
-    "src/**/*"
+    "src/**/*", "index.d.ts"
   ],
   "exclude": [
     "node_modules",
