@@ -1,5 +1,6 @@
 import { FastifyInstance } from "fastify";
 import JSZip from "jszip";
+import * as utils from "./utils";
 
 function schema(options: any) {
   return {
@@ -21,14 +22,20 @@ export default function macos(fastify: FastifyInstance, options?: any) {
     schema: schema(options),
     handler: async function (request, reply) {
       try {
-        const manifest = request.body;
+        const siteUrl = (request.params as any).siteUrl as string;
+        const manifest = request.body as WebAppManifest;
 
         // TODO meat and potatoes
 
         const zip = new JSZip();
         zip.file("");
 
-        const iconZip = getIconZip();
+        const manifestIcons = await utils.getIconsFromManifest(
+          siteUrl,
+          manifest
+        );
+        const largestImg = utils.getLargestImg(manifestIcons);
+        const genIconZip = await utils.getGeneratedIconZip(largestImg, "ios");
 
         // for await (icon of iconZip.) {}
 
@@ -44,10 +51,4 @@ export default function macos(fastify: FastifyInstance, options?: any) {
       }
     },
   });
-}
-
-async function a() {}
-
-async function getIconZip(): JSZip {
-  // TODO some fetch
 }
