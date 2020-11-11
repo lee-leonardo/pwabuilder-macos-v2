@@ -29,39 +29,39 @@ export async function getIconsFromManifest(
 
 export async function getLargestImg(
   jimpMap: Map<string, Promise<Jimp>>
-): Promise<FileEntry> {
-  let largest: {
-    size: number;
-    imageName: string;
-    jimp: Promise<Jimp> | undefined;
-  } = {
-    size: 0,
-    imageName: "",
-    jimp: undefined,
-  };
-  let img: Jimp | undefined;
-  let buffer: Buffer | undefined;
-
+): Promise<FileEntry | undefined> {
   try {
-    for (const jimp of jimpMap.entries()) {
-      const [dimensions, promise] = jimp;
+    let largest: {
+      size: number;
+      imageName: string;
+      jimp: Promise<Jimp>;
+    } = {
+      size: 0,
+      imageName: "1024x1024",
+      jimp: Jimp.read("../assets/images/1024x1024.png"),
+    };
+
+    for (const entry of jimpMap.entries()) {
+      const [dimensions, promise] = entry;
       const size = sizeOf(dimensions);
       if (largest.size < size) {
-        largest.size = size;
-        largest.imageName = dimensions;
-        largest.jimp = promise;
+        largest = {
+          size,
+          imageName: dimensions,
+          jimp: promise,
+        };
       }
     }
 
-    img = await largest.jimp;
-    buffer = (await createImageStreamFromJimp(img!)).buffer;
-  } catch (err) {}
-
-  return {
-    buffer,
-    fileName: largest.imageName,
-    type: img?.getExtension(),
-  };
+    const img = await largest.jimp;
+    return {
+      buffer: await img?.getBufferAsync(img.getMIME()),
+      fileName: largest.imageName + "." + img.getExtension(),
+      type: img?.getMIME(),
+    };
+  } catch (err) {
+    throw err;
+  }
 }
 
 export async function getGeneratedIconZip(
