@@ -64,3 +64,12 @@ export async function getGeneratedIconZip(platform: string): Promise<JSZip> {
     return JSZip.loadAsync(await response.buffer());
   } catch (err) {}
 }
+
+export async function createImageStreamFromJimp(jimpImage: Jimp): Promise<JimpStreamInterface> {
+  const buffer = await jimpImage.getBufferAsync(jimpImage.getMIME());
+  const imageStream = new stream.Readable();
+  imageStream.push(buffer);
+  imageStream.push(null);
+
+  return { stream: imageStream, buffer };
+}
