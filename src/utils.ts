@@ -4,16 +4,6 @@ import JSZip from "jszip";
 import Jimp from "jimp";
 import fetch from "node-fetch";
 import FormData from "form-data";
-import { url } from "inspector";
-
-export async function downloadIcons(
-  baseUrl: string,
-  manifest: WebAppManifest
-): Promise<JSZip> {
-  const scopedUrl = Url.resolve(baseUrl, manifest.start_url);
-
-  // manifest.icons
-}
 
 export async function getIconsFromManifest(
   baseUrl: string,
