@@ -1,7 +1,10 @@
+import * as stream from "stream";
 import * as Url from "url";
 import JSZip from "jszip";
+import Jimp from "jimp";
 import fetch from "node-fetch";
 import FormData from "form-data";
+import { url } from "inspector";
 
 export async function downloadIcons(
   baseUrl: string,
@@ -15,40 +18,71 @@ export async function downloadIcons(
 export async function getIconsFromManifest(
   baseUrl: string,
   manifest: WebAppManifest
-): Promise<JSZip> {
+): Promise<Map<string, Promise<Jimp>>> {
+  const manifestMap: Map<string, Promise<Jimp>> = new Map();
   try {
-    const zip = new JSZip();
+    [...manifest.icons].forEach((imageInfo) => {
+      const url = new Url.URL(imageInfo.src, baseUrl).toString();
+      const jimp = Jimp.read(url);
+      const sizes = imageInfo.sizes.split(" ");
 
-    return zip;
-  } catch (err) {}
-}
-
-export function getLargestImg(zip: JSZip): FileEntry {
-  const dirQueue: Array<string> = [""];
-  const zipContents: Array<JSZip.JSZipObject> = []
-  let largest = {}
-
-  for (let i = 0; i < dirQueue.length; i++) {
-    const path = dirQueue[i];
-
-    if (path === "") {
-      zip.forEach((relativePath, file) => {
-
+      sizes.forEach((size) => {
+        manifestMap.set(size, jimp);
       });
-    } else {
-      zip.folder(path)?.forEach((relativePath, file) => {
-
-      });
-    }
+    });
+  } catch (err) {
+    throw new Error("failed to parse the icons array in the manifest");
   }
+
+  return manifestMap;
 }
 
-export async function getGeneratedIconZip(platform: string): Promise<JSZip> {
+export async function getLargestImg(
+  jimpMap: Map<string, Promise<Jimp>>
+): Promise<FileEntry> {
+  let largest: {
+    size: number;
+    imageName: string;
+    jimp: Promise<Jimp> | undefined;
+  } = {
+    size: 0,
+    imageName: "",
+    jimp: undefined,
+  };
+  let img: Jimp | undefined;
+  let buffer: Buffer | undefined;
+
+  try {
+    for (const jimp of jimpMap.entries()) {
+      const [dimensions, promise] = jimp;
+      const size = sizeOf(dimensions);
+      if (largest.size < size) {
+        largest.size = size;
+        largest.imageName = dimensions;
+        largest.jimp = promise;
+      }
+    }
+
+    img = await largest.jimp;
+    buffer = (await createImageStreamFromJimp(img!)).buffer;
+  } catch (err) {}
+
+  return {
+    buffer,
+    fileName: largest.imageName,
+    type: img?.getExtension(),
+  };
+}
+
+export async function getGeneratedIconZip(
+  fileEntry: FileEntry,
+  platform: string
+): Promise<JSZip | undefined> {
   try {
     // TODO Icon file for file upload
 
     const form = new FormData();
-    form.append("fileName", /* BLOB */ "blob", "icon");
+    form.append("fileName", fileEntry.buffer, "icon");
     form.append("padding", "0.3");
     form.append("colorOption", "transparent");
     form.append("platform", platform);
@@ -65,11 +99,17 @@ export async function getGeneratedIconZip(platform: string): Promise<JSZip> {
   } catch (err) {}
 }
 
-export async function createImageStreamFromJimp(jimpImage: Jimp): Promise<JimpStreamInterface> {
+export async function createImageStreamFromJimp(
+  jimpImage: Jimp
+): Promise<JimpStreamInterface> {
   const buffer = await jimpImage.getBufferAsync(jimpImage.getMIME());
   const imageStream = new stream.Readable();
   imageStream.push(buffer);
   imageStream.push(null);
 
   return { stream: imageStream, buffer };
+}
+
+function sizeOf(size: string): number {
+  return Number(size.split("x")[0]);
 }

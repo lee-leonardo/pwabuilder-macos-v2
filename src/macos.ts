@@ -11,6 +11,12 @@ function schema(options: any) {
           hello: { type: "string" },
         },
       },
+      400: {
+        type: "object",
+        properties: {
+          message: { type: "string" },
+        },
+      },
     },
   };
 }
@@ -34,10 +40,12 @@ export default function macos(fastify: FastifyInstance, options?: any) {
           siteUrl,
           manifest
         );
-        const largestImg = utils.getLargestImg(manifestIcons);
+        const largestImg = await utils.getLargestImg(manifestIcons);
+
+        const icons = Promise.all([...manifestIcons]);
         const genIconZip = await utils.getGeneratedIconZip(largestImg, "ios");
 
-        // for await (icon of iconZip.) {}
+        // TODO process icons here
 
         reply.send({
           hello: "world",
