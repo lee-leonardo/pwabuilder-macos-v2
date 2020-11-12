@@ -21,8 +21,8 @@ function schema(options: any) {
   };
 }
 
-export default function macos(fastify: FastifyInstance, options?: any) {
-  return fastify.route({
+export default function macos(server: FastifyInstance, options?: any) {
+  return server.route({
     method: "POST",
     url: "/",
     schema: schema(options),
@@ -45,7 +45,7 @@ export default function macos(fastify: FastifyInstance, options?: any) {
           hello: "world",
         });
       } catch (err) {
-        fastify.log.error(err);
+        server.log.error(err);
 
         reply.status(400).send({
           message: "not found",
