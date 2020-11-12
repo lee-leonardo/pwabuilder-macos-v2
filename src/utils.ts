@@ -1,9 +1,6 @@
 import * as stream from "stream";
 import * as Url from "url";
-import JSZip from "jszip";
 import Jimp from "jimp";
-import fetch from "node-fetch";
-import FormData from "form-data";
 
 export function getIconsFromManifest(
   baseUrl: string,
@@ -24,68 +21,27 @@ export function getIconsFromManifest(
   return manifestMap;
 }
 
-export async function getLargestImg(
-  jimpMap: Map<string, Promise<Jimp>>
-): Promise<FileEntry | undefined> {
-  try {
-    let largest: {
-      size: number;
-      imageName: string;
-      jimp: Promise<Jimp>;
-    } = {
-      size: 0,
-      imageName: "1024x1024",
-      jimp: Jimp.read("../assets/images/1024x1024.png"),
-    };
+export function getLargestImg(jimpMap: Map<string, Promise<Jimp>>): string {
+  let largest: {
+    size: number;
+    dimensions: string;
+  } = {
+    size: 0,
+    dimensions: "",
+  };
 
-    for (const entry of jimpMap.entries()) {
-      const [dimensions, promise] = entry;
-      const size = sizeOf(dimensions);
-      if (largest.size < size) {
-        largest = {
-          size,
-          imageName: dimensions,
-          jimp: promise,
-        };
-      }
+  for (const entry of jimpMap.entries()) {
+    const [dimensions, promise] = entry;
+    const size = sizeOf(dimensions);
+    if (largest.size < size) {
+      largest = {
+        size,
+        dimensions,
+      };
     }
-
-    const img = await largest.jimp;
-    return {
-      buffer: await img?.getBufferAsync(img.getMIME()),
-      fileName: largest.imageName + "." + img.getExtension(),
-      type: img?.getMIME(),
-    };
-  } catch (err) {
-    throw err;
   }
-}
 
-export async function getGeneratedIconZip(
-  fileEntry: FileEntry,
-  platform: string
-): Promise<JSZip | undefined> {
-  try {
-    // TODO Icon file for file upload
-
-    const form = new FormData();
-    form.append("fileName", fileEntry.buffer, "icon");
-    form.append("padding", "0.3");
-    form.append("colorOption", "transparent");
-    form.append("platform", platform);
-
-    const response = await fetch(
-      "https://appimagegenerator-prod.azurewebsites.net/api/image",
-      {
-        method: "POST",
-        body: form,
-      }
-    );
-
-    return JSZip.loadAsync(await response.buffer());
-  } catch (err) {
-    throw err;
-  }
+  return largest.dimensions;
 }
 
 export async function createImageStreamFromJimp(
