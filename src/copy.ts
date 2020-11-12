@@ -1,11 +1,5 @@
 import JSZip from "jszip";
 
-export interface OperationResult {
-  filePath: string;
-  success: boolean;
-  error?: Error;
-}
-
 export type CopyAndEditFunction = (
   zip: JSZip,
   manifest: WebAppManifest,
@@ -28,7 +22,5 @@ export function copyFiles(
     operations.push(filesAndEdits[key](zip, manifest, key));
   }
 
-  return Promise.all(operations).then((results) =>
-    results.filter((result) => !result.success)
-  );
+  return operations;
 }
