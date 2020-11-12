@@ -1,6 +1,6 @@
 import { FastifyInstance } from "fastify";
 import JSZip from "jszip";
-import * as utils from "./utils";
+import { handleImages } from "./images";
 import { FilesAndEdit, copyFiles } from "./copy";
 
 function schema(options: any) {
@@ -33,16 +33,13 @@ export default function macos(server: FastifyInstance, options?: any) {
         const siteUrl = (request.params as any).siteUrl as string;
         const manifest = request.body as WebAppManifest;
 
-        const result = await Promise.all([
-          handleImages(zip, manifest, siteUrl),
-          copyFiles(zip, manifest, filesAndEdits),
+        await Promise.all([
+          ...(await handleImages(server, zip, manifest, siteUrl)),
+          ...copyFiles(zip, manifest, filesAndEdits),
         ]);
 
-        if (!result) {
-          // error
-        }
-
         // send zip.
+        // reply.send(zip);
         reply.send({
           hello: "world",
         });
@@ -50,45 +47,14 @@ export default function macos(server: FastifyInstance, options?: any) {
         server.log.error(err);
 
         reply.status(400).send({
-          message: "not found",
+          message: "failed to create your macos project",
         });
       }
     },
   });
 }
 
-// Edits manifest entries to use new images and
-async function handleImages(
-  zip: JSZip,
-  manifest: WebAppManifest,
-  siteUrl: string
-) {
-  try {
-    //each image needs to be copied into two places, a manifest changes and also json write changes in the assets folder
-    const manifestIcons = await utils.getIconsFromManifest(siteUrl, manifest);
-    const largestImg = await utils.getLargestImg(manifestIcons);
-    const icons = Promise.all([...manifestIcons]);
-    const genIconZip = await utils.getGeneratedIconZip(largestImg!, "ios");
-
-    const iconName = "12x12" + "extension";
-    // two paths:
-    // ./images/
-    zip.file(`images/${iconName}`);
-    // ./MacOSpwa/Assets.xcassets/
-    zip.file(`MacOSpwa/Assets.xcassets/${iconName}`);
-
-    // edit manifest reference entry
-    manifest.icons = [];
-
-    // edit: ./MacOSpwa/Assets.xcassets/AppIcon.appiconset/Contents.json , entries.
-    const json = {};
-    zip.file(
-      "MacOSpwa/Assets.xcassets/AppIcon.appiconset/Contents.json",
-      JSON.stringify(json, undefined, 2)
-    );
-  } catch (error) {}
-}
-
+// Object that holds the files and edit functions to those files.
 const filesAndEdits: FilesAndEdit = {
   "": async (zip, manifest, filePath) => {
     return {
@@ -113,8 +79,6 @@ const filesAndEdits: FilesAndEdit = {
       };
     }
   },
-
-  // Example
   "MacOSpwa/manifest.json": async (zip, manifest, filePath) => {
     try {
       zip.file(filePath, JSON.stringify(manifest, undefined, 2));
