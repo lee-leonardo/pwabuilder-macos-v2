@@ -5,24 +5,21 @@ import Jimp from "jimp";
 import fetch from "node-fetch";
 import FormData from "form-data";
 
-export async function getIconsFromManifest(
+export function getIconsFromManifest(
   baseUrl: string,
   manifest: WebAppManifest
-): Promise<Map<string, Promise<Jimp>>> {
+): Map<string, Promise<Jimp>> {
   const manifestMap: Map<string, Promise<Jimp>> = new Map();
-  try {
-    [...manifest.icons].forEach((imageInfo) => {
-      const url = new Url.URL(imageInfo.src, baseUrl).toString();
-      const jimp = Jimp.read(url);
-      const sizes = imageInfo.sizes.split(" ");
 
-      sizes.forEach((size) => {
-        manifestMap.set(size, jimp);
-      });
+  manifest.icons.forEach((imageInfo) => {
+    const url = new Url.URL(imageInfo.src, baseUrl).toString();
+    const jimp = Jimp.read(url);
+    const sizes = imageInfo.sizes.split(" ");
+
+    sizes.forEach((size) => {
+      manifestMap.set(size, jimp);
     });
-  } catch (err) {
-    throw new Error("failed to parse the icons array in the manifest");
-  }
+  });
 
   return manifestMap;
 }
