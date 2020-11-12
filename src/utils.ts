@@ -86,7 +86,9 @@ export async function getGeneratedIconZip(
     );
 
     return JSZip.loadAsync(await response.buffer());
-  } catch (err) {}
+  } catch (err) {
+    throw err;
+  }
 }
 
 export async function createImageStreamFromJimp(
