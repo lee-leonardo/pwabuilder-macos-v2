@@ -34,7 +34,7 @@ export default function macos(server: FastifyInstance, options?: any) {
         const manifest = request.body as WebAppManifest;
 
         await Promise.all([
-          ...(await handleImages(server, zip, manifest, siteUrl)),
+          ...(await handleImages(server, zip, manifest, siteUrl, "ios")),
           ...copyFiles(zip, manifest, filesAndEdits),
         ]);
 

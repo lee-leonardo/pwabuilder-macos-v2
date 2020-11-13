@@ -11,3 +11,9 @@ interface JimpStreamInterface {
   stream: NodeJS.ReadableStream;
   buffer: Buffer;
 }
+
+interface OperationResult {
+  filePath: string;
+  success: boolean;
+  error?: Error;
+}
