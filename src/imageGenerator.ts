@@ -2,14 +2,14 @@ import JSZip from "jszip";
 import Jimp from "jimp";
 import FormData from "form-data";
 import fetch from "node-fetch";
+import { FastifyInstance } from "fastify";
 
 export async function getGeneratedIconZip(
+  server: FastifyInstance,
   image: Jimp,
   platform: string
 ): Promise<JSZip | undefined> {
   try {
-    // TODO Icon file for file upload
-
     const form = new FormData();
     form.append("fileName", await image.getBufferAsync(image.getMIME()), {
       contentType: image.getMIME(),
@@ -28,6 +28,6 @@ export async function getGeneratedIconZip(
 
     return JSZip.loadAsync(await response.buffer());
   } catch (err) {
-    throw err;
+    server.log.error(err);
   }
 }
