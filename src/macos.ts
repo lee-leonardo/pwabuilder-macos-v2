@@ -64,6 +64,7 @@ const filesAndEdits: FilesAndEdit = {
   "MacOSpwa/Manifest.swift": copyFile,
   "MacOSpwa/ViewController.swift": copyFile,
   "MacOSpwa.xcodeproj/project.pbxproj": copyAndEditFile(
+    // TODO make this an async generator to make this a safer operation
     async (content, manifest) => {
       const name = `name = `;
       const productName = `productName = `;
@@ -138,6 +139,7 @@ const filesAndEdits: FilesAndEdit = {
 
   "MacOSpwa/Assets.xcassets/Contents.json": copyFile,
   "MacOSpwa/Base.lproj/Main.storyboard": copyAndEditFile(
+    // TODO make this an async generator to make this a safer operation
     async (content, manifest) => {
       const titleBase = `menuItem title="`;
       const subMenuTitle = `key="submenu" title="`;
