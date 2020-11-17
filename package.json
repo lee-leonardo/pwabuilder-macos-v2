@@ -6,7 +6,8 @@
   "types": "index.d.ts",
   "scripts": {
     "build": "tsc",
-    "start": "node build/server.js"
+    "start": "node build/server.js",
+    "fastify": "fastify start build/macos.js"
   },
   "repository": {
     "type": "git",
@@ -25,6 +26,7 @@
   },
   "dependencies": {
     "@jimp/jpeg": "^0.16.1",
+    "@jimp/png": "^0.16.1",
     "@types/node": "^14.14.6",
     "@types/node-fetch": "^2.5.7",
     "dotenv": "^8.2.0",
