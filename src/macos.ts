@@ -2,7 +2,13 @@ import { FastifyInstance } from "fastify";
 import JSZip from "jszip";
 import { tempAppName } from "./constants";
 import { handleImages } from "./images";
-import { FilesAndEdit, copyFiles, copyFile, copyAndEditFile } from "./copy";
+import {
+  FilesAndEdit,
+  copyFiles,
+  copyFile,
+  copyAndEditFile,
+  copyFolder,
+} from "./copy";
 
 function schema(options: any) {
   return {
@@ -17,6 +23,7 @@ function schema(options: any) {
         type: "object",
         properties: {
           message: { type: "string" },
+          errMessage: { type: "string" },
         },
       },
     },
@@ -49,6 +56,7 @@ export default function macos(server: FastifyInstance, options?: any) {
 
         reply.status(400).send({
           message: "failed to create your macos project",
+          errMessage: err.message,
         });
       }
     },
@@ -64,7 +72,6 @@ const filesAndEdits: FilesAndEdit = {
   "MacOSpwa/Manifest.swift": copyFile,
   "MacOSpwa/ViewController.swift": copyFile,
   "MacOSpwa.xcodeproj/project.pbxproj": copyAndEditFile(
-    // TODO make this an async generator to make this a safer operation
     async (content, manifest) => {
       const name = `name = `;
       const productName = `productName = `;
@@ -113,33 +120,11 @@ const filesAndEdits: FilesAndEdit = {
       );
     }
   ),
-
-  // TODO folder
-  "project/": async (zip, manifest, filePath) => {
-    return {
-      filePath,
-      success: true,
-    };
-  },
-
-  // TODO folder
-  "MacOSpwa/MacOSpwa.xcdatamodeld/": async (zip, manifest, filePath) => {
-    return {
-      filePath,
-      success: true,
-    };
-  },
-  // TODO folder
-  "MacOSpwa.xcodeproj/": async (zip, manifest, filePath) => {
-    return {
-      filePath,
-      success: true,
-    };
-  },
-
+  "project/": copyFolder,
+  "MacOSpwa/MacOSpwa.xcdatamodeld/": copyFolder,
+  "MacOSpwa.xcodeproj/": copyFolder,
   "MacOSpwa/Assets.xcassets/Contents.json": copyFile,
   "MacOSpwa/Base.lproj/Main.storyboard": copyAndEditFile(
-    // TODO make this an async generator to make this a safer operation
     async (content, manifest) => {
       const titleBase = `menuItem title="`;
       const subMenuTitle = `key="submenu" title="`;
