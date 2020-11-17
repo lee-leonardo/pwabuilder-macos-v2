@@ -1,5 +1,6 @@
 /// <reference lib="dom" />
 /// <reference path="./utils.d.ts" />
+
 type MIME_TYPE = string;
 type SpaceSeparatedList = string;
 
