@@ -9,9 +9,17 @@ import {
   copyAndEditFile,
   copyFolder,
 } from "./copy";
+import { webAppManifestSchema } from "./schema";
 
-function schema(options: any) {
+function schema(server: FastifyInstance, options: any) {
   return {
+    querystring: {
+      type: "object",
+      properties: {
+        siteUrl: { type: "string" },
+      },
+    },
+    body: webAppManifestSchema(server, options),
     response: {
       200: {
         type: "object",
@@ -34,11 +42,15 @@ export default function macos(server: FastifyInstance, options?: any) {
   return server.route({
     method: "POST",
     url: "/",
-    schema: schema(options),
+    schema: schema(server, options),
     handler: async function (request, reply) {
       try {
+        server.log.debug("macos");
+        server.log.debug(request);
+        server.log.debug(reply);
+
         const zip = new JSZip();
-        const siteUrl = (request.params as any).siteUrl as string;
+        const siteUrl = (request.query as any).siteUrl as string;
         const manifest = request.body as WebAppManifest;
 
         await Promise.all([
