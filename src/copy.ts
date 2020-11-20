@@ -38,7 +38,12 @@ export async function copyFile(
   filePath: string
 ): Promise<OperationResult> {
   try {
-    zip.file(filePath, getFileBufferAndEdit(filePath));
+    const fileBuffer = await getFileBufferAndEdit(filePath);
+    if (fileBuffer instanceof Error) {
+      throw fileBuffer;
+    }
+
+    zip.file(filePath, fileBuffer);
 
     return {
       filePath,
@@ -56,7 +61,12 @@ export async function copyFile(
 export function copyAndEditFile(editCb: EditCallback): CopyAndEditFunction {
   return async (zip: JSZip, manifest: WebAppManifest, filePath: string) => {
     try {
-      zip.file(filePath, getFileBufferAndEdit(filePath, editCb, manifest));
+      const fileBuffer = await getFileBufferAndEdit(filePath, editCb, manifest);
+      if (fileBuffer instanceof Error) {
+        throw fileBuffer;
+      }
+    
+      zip.file(filePath, fileBuffer);
 
       return {
         filePath,
@@ -76,15 +86,19 @@ export async function getFileBufferAndEdit(
   path: string,
   editCb?: EditCallback,
   manifest?: WebAppManifest
-): Promise<Buffer> {
-  const buf = await fs.readFile(`./assets/${path}`);
-  const str = buf.toString("utf-8");
+): Promise<Buffer | Error> {
+  try {
+    const buf = await fs.readFile(`./assets/${path}`);
+    const str = buf.toString("utf-8");
 
-  if (editCb) {
-    return Buffer.from(await editCb(str, manifest!));
+    if (editCb) {
+      return Buffer.from(await editCb(str, manifest!));
+    }
+
+    return Buffer.from(str);
+  } catch (error) {
+    return error;
   }
-
-  return Buffer.from(str);
 }
 
 export async function copyFolder(
