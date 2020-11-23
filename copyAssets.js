@@ -2,7 +2,7 @@ var fs = require('fs-extra');
 
 (async function () {
   try {
-    console.log("Move assets script.");
+    console.log("copyAssets script");
     await fs.copy("src/assets/", "build/assets")
     console.log("assets folder copied!");
   } catch (error) {
