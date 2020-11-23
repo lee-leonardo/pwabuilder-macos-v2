@@ -26,7 +26,6 @@ export async function handleImages(
 
     // Clear the two entries that require the correct pathing, add entries based on what is returned in the generated.
     const appIconContents = { ...appiconsetJson };
-    manifest.icons = [];
 
     //each image needs to be copied into two places, a manifest changes and also json write changes in the assets folder
     const largestImgEntry = getLargestImgManifestEntry(manifest);
@@ -37,9 +36,11 @@ export async function handleImages(
     ).then((zip) => zip);
     const manifestIcons = await getIconsFromManifest(siteUrl, manifest);
     const genIconsStr = await genIconZip?.file("icons.json")?.async("string");
-    const genIconsList = JSON.parse(genIconsStr!)["icons"] as Array<
-      ManifestImageResource
-    >;
+    const genIconsList = JSON.parse(genIconsStr!)[
+      "icons"
+    ] as Array<ManifestImageResource>;
+
+    manifest.icons = [];
 
     /*
       1. Attempt to grab icon from manifest
@@ -117,13 +118,14 @@ export function getLargestImgManifestEntry(
   manifest: WebAppManifest
 ): ManifestImageResource {
   let largestIndex = 0;
-  let largesSize = 0;
+  let largestSize = 0;
+
   manifest.icons.forEach((icon, index) => {
     icon.sizes.split(" ").forEach((size) => {
       const currentSize = sizeOf(size);
-      if (currentSize > largesSize) {
+      if (currentSize > largestSize) {
         largestIndex = index;
-        largesSize = currentSize;
+        largestSize = currentSize;
       }
     });
   });
