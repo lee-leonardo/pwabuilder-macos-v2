@@ -20,13 +20,9 @@ function schema(server: FastifyInstance, options: any) {
       },
     },
     body: webAppManifestSchema(server, options),
+    // TODO look for how to serialize information for the schema for a file, else remove to default to JSON.stringify and pump
     response: {
-      200: {
-        type: "object",
-        properties: {
-          hello: { type: "string" },
-        },
-      },
+      // 200 response is file a so no json schema
       400: {
         type: "object",
         properties: {
@@ -45,24 +41,21 @@ export default function macos(server: FastifyInstance, options?: any) {
     schema: schema(server, options),
     handler: async function (request, reply) {
       try {
-        server.log.debug("macos");
-        server.log.debug(request);
-        server.log.debug(reply);
-
         const zip = new JSZip();
         const siteUrl = (request.query as any).siteUrl as string;
         const manifest = request.body as WebAppManifest;
 
-        await Promise.all([
+        const result = await Promise.all([
           ...(await handleImages(server, zip, manifest, siteUrl, "ios")),
           ...copyFiles(zip, manifest, filesAndEdits),
         ]);
 
-        // send zip.
-        // reply.send(zip);
-        reply.send({
-          hello: "world",
-        });
+        if (!result) {
+          throw Error("failed to resolve Promises");
+        }
+
+        // Send Stream
+        reply.type("application/zip").send(zip.generateNodeStream());
       } catch (err) {
         server.log.error(err);
 
