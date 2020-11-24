@@ -3,6 +3,7 @@ import { FastifyInstance } from "fastify";
 function imageResourceSchema() {
   return {
     $id: "imageResource",
+    required: ["src"],
     properties: {
       src: { type: "string" },
       sizes: { type: "string" },
@@ -16,7 +17,7 @@ function webAppSchema() {
   return {
     $id: "webApp",
     type: "object",
-    required: [],
+    required: ["name"],
     properties: {
       dir: { type: "string" },
       lang: { type: "string" },
