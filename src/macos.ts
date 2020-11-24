@@ -44,18 +44,20 @@ export default function macos(server: FastifyInstance, options?: any) {
         const zip = new JSZip();
         const siteUrl = (request.query as any).siteUrl as string;
         const manifest = request.body as WebAppManifest;
-
-        const result = await Promise.all([
+        const results = await Promise.all([
           ...(await handleImages(server, zip, manifest, siteUrl, "ios")),
           ...copyFiles(zip, manifest, filesAndEdits),
         ]);
 
-        if (!result) {
-          throw Error("failed to resolve Promises");
+        const errors = results.filter((result) => !result.success);
+        if (errors.length > 0) {
+          throw Error(errors.map((result) => result.filePath).toString());
         }
 
         // Send Stream
-        reply.type("application/zip").send(zip.generateNodeStream());
+        reply
+          .type("application/zip")
+          .send(await zip.generateAsync({ type: "nodebuffer" }));
       } catch (err) {
         server.log.error(err);
 
