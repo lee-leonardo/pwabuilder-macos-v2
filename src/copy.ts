@@ -1,4 +1,5 @@
 import * as path from "path";
+import walk from "klaw";
 import { promises as fs } from "fs";
 import JSZip from "jszip";
 
@@ -6,6 +7,8 @@ type EditCallback = (
   fileContent: string,
   manifest: WebAppManifest
 ) => Promise<string>;
+
+const ROOT = "src/assets";
 
 export type CopyAndEditFunction = (
   zip: JSZip,
@@ -22,7 +25,7 @@ export function copyFiles(
   zip: JSZip,
   manifest: WebAppManifest,
   filesAndEdits: FilesAndEdit
-) {
+): Array<Promise<OperationResult>> {
   const operations = [];
 
   for (const key of Object.keys(filesAndEdits)) {
@@ -38,7 +41,7 @@ export async function copyFile(
   filePath: string
 ): Promise<OperationResult> {
   try {
-    const fileBuffer = await getFileBufferAndEdit(filePath);
+    const fileBuffer = await getFileBufferAndEdit(path.join(ROOT, filePath));
     if (fileBuffer instanceof Error) {
       throw fileBuffer;
     }
@@ -61,11 +64,15 @@ export async function copyFile(
 export function copyAndEditFile(editCb: EditCallback): CopyAndEditFunction {
   return async (zip: JSZip, manifest: WebAppManifest, filePath: string) => {
     try {
-      const fileBuffer = await getFileBufferAndEdit(filePath, editCb, manifest);
+      const fileBuffer = await getFileBufferAndEdit(
+        path.join(ROOT, filePath),
+        editCb,
+        manifest
+      );
       if (fileBuffer instanceof Error) {
         throw fileBuffer;
       }
-    
+
       zip.file(filePath, fileBuffer);
 
       return {
@@ -88,7 +95,7 @@ export async function getFileBufferAndEdit(
   manifest?: WebAppManifest
 ): Promise<Buffer | Error> {
   try {
-    const buf = await fs.readFile(`./assets/${path}`);
+    const buf = await fs.readFile(path);
     const str = buf.toString("utf-8");
 
     if (editCb) {
@@ -108,10 +115,15 @@ export async function copyFolder(
 ) {
   let filePath = folderPath;
   try {
-    for await (filePath of generateAssetFilePaths(folderPath)) {
-      if ((filePath as any) instanceof Error) {
-        throw filePath;
+    for await (const current of walk(path.join(ROOT, folderPath), {
+      queueMethod: "shift",
+    })) {
+      const { path: filePath, stats } = current as walk.Item;
+
+      if (stats.isDirectory()) {
+        continue;
       }
+
       zip.file(filePath, fs.readFile(filePath));
     }
     return {
@@ -124,30 +136,5 @@ export async function copyFolder(
       success: false,
       error,
     };
-  }
-}
-
-/*
-  dynamically extends the contents searched (FIFO)
- */
-async function* generateAssetFilePaths(folderPath: string) {
-  const paths = [folderPath];
-  try {
-    for (let i = 0; i < paths.length; i++) {
-      const current = paths[i];
-      const stats = await fs.stat(current);
-
-      if (stats.isFile()) {
-        yield current;
-      } else if (stats.isDirectory()) {
-        const folderContents = (await fs.readdir(current)).map((file) =>
-          path.resolve(folderPath, current, file)
-        );
-
-        paths.push(...folderContents);
-      }
-    }
-  } catch (error) {
-    return error;
   }
 }
