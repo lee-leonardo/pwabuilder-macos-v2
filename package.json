@@ -5,8 +5,7 @@
   "main": "index.js",
   "types": "index.d.ts",
   "scripts": {
-    "copyAssets": "node copyAssets.js",
-    "build": "tsc && npm run copyAssets",
+    "build": "tsc",
     "start": "node build/server.js",
     "fastify": "fastify start build/macos.js"
   },
@@ -28,6 +27,7 @@
   "dependencies": {
     "@jimp/jpeg": "^0.16.1",
     "@jimp/png": "^0.16.1",
+    "@types/klaw": "^3.0.1",
     "@types/node": "^14.14.6",
     "@types/node-fetch": "^2.5.7",
     "dotenv": "^8.2.0",
@@ -35,6 +35,7 @@
     "form-data": "^3.0.0",
     "jimp": "^0.16.1",
     "jszip": "^3.5.0",
+    "klaw": "^3.0.0",
     "node-fetch": "^2.6.1",
     "typedoc": "^0.19.2"
   }
