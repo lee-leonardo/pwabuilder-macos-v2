@@ -1,5 +1,5 @@
 import * as Url from "url";
-import JSZip, { JSZipObject } from "jszip";
+import JSZip from "jszip";
 import Jimp from "jimp";
 import { getGeneratedIconZip } from "./imageGenerator";
 import { FastifyInstance } from "fastify";
