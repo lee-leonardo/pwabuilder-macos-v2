@@ -11,7 +11,7 @@ import {
 } from "./copy";
 import { webAppManifestSchema } from "./schema";
 
-function schema(server: FastifyInstance, options: any) {
+function schema(server: FastifyInstance) {
   return {
     querystring: {
       type: "object",
@@ -19,8 +19,7 @@ function schema(server: FastifyInstance, options: any) {
         siteUrl: { type: "string" },
       },
     },
-    body: webAppManifestSchema(server, options),
-    // TODO look for how to serialize information for the schema for a file, else remove to default to JSON.stringify and pump
+    body: webAppManifestSchema(server),
     response: {
       // 200 response is file a so no json schema
       400: {
@@ -34,11 +33,11 @@ function schema(server: FastifyInstance, options: any) {
   };
 }
 
-export default function macos(server: FastifyInstance, options?: any) {
+export default function macos(server: FastifyInstance) {
   return server.route({
     method: "POST",
     url: "/",
-    schema: schema(server, options),
+    schema: schema(server),
     handler: async function (request, reply) {
       try {
         const zip = new JSZip();

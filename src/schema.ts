@@ -70,7 +70,7 @@ function webAppSchema() {
   };
 }
 
-export function webAppManifestSchema(server: FastifyInstance, options: any) {
+export function webAppManifestSchema(server: FastifyInstance) {
   server.addSchema(imageResourceSchema());
   server.addSchema(webAppSchema());
 
