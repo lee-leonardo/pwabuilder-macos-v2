@@ -5,9 +5,11 @@
   "main": "index.js",
   "types": "index.d.ts",
   "scripts": {
+    "pretest": "eslint src",
     "build": "tsc",
     "start": "node build/server.js",
-    "fastify": "fastify start build/macos.js"
+    "fastify": "fastify start build/macos.js",
+    "typedoc": "typedoc --out docs src"
   },
   "repository": {
     "type": "git",
