@@ -65,22 +65,22 @@ export async function handleImages(
       const filePath = `MacOSpwa/Assets.xcassets/${iconName}`;
 
       operations.push(
-        new Promise(async (resolve, reject) => {
+        (async () => {
           try {
             zip.file(filePath, await icon.getBufferAsync(iconMIME));
 
-            resolve({
+            return {
               filePath,
               success: true,
-            });
+            };
           } catch (error) {
-            reject({
+            return {
               filePath,
               success: false,
               error,
-            });
+            };
           }
-        })
+        })()
       );
 
       appIconContents.images
