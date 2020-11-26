@@ -1,7 +1,7 @@
 import * as path from "path";
 import walk from "klaw";
 import { promises as fs } from "fs";
-import JSZip from "jszip";
+import JSZip, { file, folder } from "jszip";
 
 type EditCallback = (
   fileContent: string,
@@ -113,18 +113,21 @@ export async function copyFolder(
   manifest: WebAppManifest,
   folderPath: string
 ) {
-  let filePath = folderPath;
+  let relativePath = folderPath;
   try {
     for await (const current of walk(path.join(ROOT, folderPath), {
       queueMethod: "shift",
     })) {
-      const { path: filePath, stats } = current as walk.Item;
+      const filePath = (current as walk.Item).path;
+      const { stats } = current as walk.Item;
+      relativePath = path.relative(ROOT, filePath);
 
       if (stats.isDirectory()) {
         continue;
       }
 
-      zip.file(filePath, fs.readFile(filePath));
+      // path reltative to folderpath
+      zip.file(relativePath, fs.readFile(filePath));
     }
     return {
       filePath: folderPath,
@@ -132,7 +135,7 @@ export async function copyFolder(
     };
   } catch (error) {
     return {
-      filePath,
+      filePath: relativePath,
       success: false,
       error,
     };
