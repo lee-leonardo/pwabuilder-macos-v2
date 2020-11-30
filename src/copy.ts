@@ -1,7 +1,7 @@
 import * as path from "path";
 import walk from "klaw";
 import { promises as fs } from "fs";
-import JSZip, { file, folder } from "jszip";
+import JSZip from "jszip";
 
 type EditCallback = (
   fileContent: string,
@@ -98,8 +98,8 @@ export async function getFileBufferAndEdit(
     const buf = await fs.readFile(path);
     const str = buf.toString("utf-8");
 
-    if (editCb) {
-      return Buffer.from(await editCb(str, manifest!));
+    if (editCb && manifest) {
+      return Buffer.from(await editCb(str, manifest));
     }
 
     return Buffer.from(str);
@@ -112,7 +112,7 @@ export async function copyFolder(
   zip: JSZip,
   manifest: WebAppManifest,
   folderPath: string
-) {
+): Promise<OperationResult> {
   let relativePath = folderPath;
   try {
     for await (const current of walk(path.join(ROOT, folderPath), {

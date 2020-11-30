@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import * as Url from "url";
 import JSZip from "jszip";
 import Jimp from "jimp";
@@ -36,9 +37,11 @@ export async function handleImages(
     ).then((zip) => zip);
     const manifestIcons = await getIconsFromManifest(siteUrl, manifest);
     const genIconsStr = await genIconZip?.file("icons.json")?.async("string");
-    const genIconsList = JSON.parse(genIconsStr!)[
-      "icons"
-    ] as Array<ManifestImageResource>;
+    let genIconsList: Array<ManifestImageResource> = [];
+
+    if (genIconsStr) {
+      genIconsList = JSON.parse(genIconsStr)["icons"];
+    }
 
     manifest.icons = [];
 

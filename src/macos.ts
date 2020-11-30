@@ -33,6 +33,7 @@ function schema(server: FastifyInstance) {
   };
 }
 
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 export default function macos(server: FastifyInstance) {
   return server.route({
     method: "POST",
@@ -41,7 +42,7 @@ export default function macos(server: FastifyInstance) {
     handler: async function (request, reply) {
       try {
         const zip = new JSZip();
-        const siteUrl = (request.query as any).siteUrl as string;
+        const siteUrl = (request.query as MacOSQuery).siteUrl as string;
         const manifest = request.body as WebAppManifest;
         const results = await Promise.all([
           ...(await handleImages(server, zip, manifest, siteUrl, "ios")),

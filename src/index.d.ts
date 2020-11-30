@@ -1,4 +1,5 @@
 /// <reference lib="dom" />
+// eslint-disable-next-line @typescript-eslint/triple-slash-reference
 /// <reference path="./utils.d.ts" />
 
 type MIME_TYPE = string;
@@ -40,4 +41,9 @@ interface ManifestImageResource {
   purpose: "monochrome" | "maskable" | "any" | SpaceSeparatedList;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
 interface Unsupported {}
+
+interface MacOSQuery {
+  siteUrl: string;
+}

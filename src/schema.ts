@@ -70,6 +70,7 @@ function webAppSchema() {
   };
 }
 
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 export function webAppManifestSchema(server: FastifyInstance) {
   server.addSchema(imageResourceSchema());
   server.addSchema(webAppSchema());
