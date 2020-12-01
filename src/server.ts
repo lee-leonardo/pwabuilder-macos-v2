@@ -16,7 +16,7 @@ macos(server);
 const start = async () => {
   try {
     await server.listen(port, address);
-    console.log("server setup finished");
+    console.log(`listening on port: ${port} and address: ${address}`);
   } catch (err) {
     server.log.error(err);
     console.error(err);
