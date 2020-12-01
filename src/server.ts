@@ -3,6 +3,7 @@ import fastify from "fastify";
 import macos from "./macos";
 
 const port = process.env.PORT || 3000;
+const address = "0.0.0.0";
 
 dotenv.config();
 
@@ -14,11 +15,12 @@ macos(server);
 
 const start = async () => {
   try {
-    await server.listen(port);
+    await server.listen(port, address);
     console.log("server setup finished");
   } catch (err) {
     server.log.error(err);
     console.error(err);
+    process.exit(1);
   }
 };
 
