@@ -3,12 +3,13 @@ import fastify from "fastify";
 import macos from "./macos";
 
 const port = process.env.PORT || 3000;
-const address = "0.0.0.0";
+const address = process.env.HOST || "0.0.0.0";
 
 dotenv.config();
 
 const server = fastify({
   logger: true,
+  trustProxy: true,
 });
 
 macos(server);
