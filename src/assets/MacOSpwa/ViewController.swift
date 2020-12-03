@@ -42,7 +42,7 @@ class ViewController: NSViewController, WKNavigationDelegate, WKUIDelegate, WKSc
 
         if manifest.isUrlInManifestScope(urlString: newUrlString) {
             //Within scope: Open new app window
-            newWindowController = storyboard?.instantiateController(withIdentifier: NSStoryboard.SceneIdentifier(rawValue: "mainWindow")) as! NSWindowController
+            newWindowController = storyboard?.instantiateController(withIdentifier: "mainWindow") as! NSWindowController
             let vc = newWindowController.contentViewController as! ViewController
             vc.manifest = manifest
             vc.webUrl = newUrlString
